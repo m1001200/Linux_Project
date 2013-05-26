@@ -17,7 +17,13 @@
 
 //-------void IrcIdentify();-----------------------------------------------------------
 
-1. Hier wird Identität 
+1. Identität annehmen und einen Channel betreten.
+2. Die Benutzerdaten werden mit USER und NICK festgelegt.
+3. Nachrichten werden mit PRIVMSG an einen Dienst, eine Person oder einen Channel 
+   gesendet.
+4. Mit JOIN wird in einen Channel betreten, damit eine Kommunikation (senden und 
+   empfangen) mit dem Channel möglich ist. 
+5. Eine Begrüßungsnachricht wird in den Channel gesendet.
 
 //-------void PingParse(const string & buffer);----------------------------------------
 
@@ -32,6 +38,8 @@
    an PONG-Nachricht angehängt und an IRC-Server zurückgesendet.          
 
 //-------void BotFunctions(const string & buffer);-------------------------------------
+
+1. 
 
 //-------void IrcParse(string buffer);-------------------------------------------------
 
