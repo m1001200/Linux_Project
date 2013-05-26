@@ -30,7 +30,6 @@ using namespace std;
 #else
     int sockfd;
 #endif
-//------------------------------------
 
 void IrcDisconnect(){
 #ifdef WIN32
@@ -78,7 +77,7 @@ void IrcConnect(){
     }
 }
 void SendToUplink(const char *msg){
-    send(sockfd, msg, strlen(msg),0);
+    send(sockfd, msg, strlen(msg), 0);
 }
 void IrcIdentify(){
     SendToUplink("NICK_NAME Bot\r\n");
@@ -96,4 +95,23 @@ void PingParse(const string &buffer){
         SendToUplink(pong.c_str());
     }
 }
+void BotFunctions(const string &buffer){
+    size_t pos = 0;
+    if ((pos = buffer.find(":say")) != string::npos) {
+        SendToUplink(("PRIVMSG #channel:" + buffer.substr(pos + 5) + "\r\n").c_str());
+    } else if (buffer.find(":User!User@User.user.insiderZ.DE") == 0 && buffer.find("exit") != string::npos){
+        SendToUplink("PRIVMSG #channel:Cya\r\n");
+        IrcDisconnect();
+        exit(0);
+    }
+}
+
+
+
+
+
+
+
+
+
 
