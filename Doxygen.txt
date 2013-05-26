@@ -17,6 +17,8 @@
 
 //-------void IrcIdentify();-----------------------------------------------------------
 
+1. Hier wird Identität 
+
 //-------void PingParse(const string & buffer);----------------------------------------
 
 1. Für die Kommunikationsaufbau und Kommunikation mit einem IRC-Server wird sogenannte 
@@ -33,8 +35,14 @@
 
 //-------void IrcParse(string buffer);-------------------------------------------------
 
+1. Die "\r\n"-String-Endung soll gelöscht werden, damit die empfangene Nachrichten 
+   später behandelt werden können.
+2. Die empfangene Nachrichten werden an die PingParse() und BotFunctions()-Funktionen
+   übergeben. 
+
 //-------int main();-------------------------------------------------------------------
 
 1. Hier sollen Nachrichten empfangen werden.
 2. Es wird, mit Hilfe der recv()-Socketfunktion, auf eine Antwort vom IRC-Server gewartet.
-3. 
+3. Nach dem IRC-Server antwortet, werden die Nachrichten empfangen und an die  
+   IrcParser(buffer)-Funktion übergeben. 
