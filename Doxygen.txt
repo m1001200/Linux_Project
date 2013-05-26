@@ -1,1 +1,40 @@
-Hallo lieber Leser!
+//-------void IrcConnect();------------------------------------------------------------
+
+1. Initialisierung des Sockets mit Hilfe der socket()-Funktion.
+2. Ermittlung der Host-Adresse mit Hilfe der gethodtbeiname()-Funktion.
+3. Verbindung wird aufgebaut.
+4. Beim Fehlschlägen wir die IrcDisconnect()-Funktion aufgerufen. 
+
+//-------void IrcDisconnect();---------------------------------------------------------
+
+1. Sockets werden mit Hilfe der closesocket() bzw. close()-Funktion freigegeben.
+
+//-------void SendToUplink(const char *msg);-------------------------------------------
+
+1. Nachrichten werden mit Hilfe der send()-Funktion, die in die SendToUplink()-Funktion
+   zum Vereinfachen umgeschossen wurde, an den IRC-Server versendet.
+2. Puffer, der übergeben werden soll, muss immer mit einem "\r\n" abgeschlossen sein.
+
+//-------void IrcIdentify();-----------------------------------------------------------
+
+//-------void PingParse(const string & buffer);----------------------------------------
+
+1. Für die Kommunikationsaufbau und Kommunikation mit einem IRC-Server wird sogenannte 
+   "PING-PONG" Nachrichten benötigt.
+2. Vom IRC-Server wird ständig geprüft, ob der Client noch aktiv ist.
+3. Eine Nachricht mit dem Inhalt "PING" und einem String-Parmater ("PING") wird vom 
+   IRC-Server an Client.
+4. Damit die Verbindung nicht unterbrochen wird, soll eine Nachricht mit dem Inhalt 
+   "PONG" vom Client an IRC-Server gesendet werden. 
+5. Die zusätzliche Information, die vom IRC-Server mit der PING-Nachricht kommt, wird 
+   an PONG-Nachricht angehängt und an IRC-Server zurückgesendet.          
+
+//-------void BotFunctions(const string & buffer);-------------------------------------
+
+//-------void IrcParse(string buffer);-------------------------------------------------
+
+//-------int main();-------------------------------------------------------------------
+
+1. Hier sollen Nachrichten empfangen werden.
+2. Es wird, mit Hilfe der recv()-Socketfunktion, auf eine Antwort vom IRC-Server gewartet.
+3. 
