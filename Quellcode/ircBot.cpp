@@ -22,6 +22,14 @@ const unsigned int MAX_LINE = 1024; // input Buffer Size
 const int PORT = 6667;
 const char *HOST = "irc.europa-irc.de"
 
+void IrcDisconnect();
+void IrcConnect();
+void SendToUplink(const char *msg);
+void IrcIdentify();
+void PingParse(const string &buffer);
+void BotFunctions(const string &buffer);
+void IrcParse(string buffer);
+
 using namespace std;
 
 //--- Win. spezifisch ----------------
@@ -108,7 +116,7 @@ void BotFunctions(const string &buffer){
 void IrcParse(string buffer){
     if (buffer.find("\r\n") == buffer.length() - 2) {
         buffer.erase(buffer.length() - 2);
-        
+        PingParse(buffer);
         BotFunctions(buffer);
     }
 }
