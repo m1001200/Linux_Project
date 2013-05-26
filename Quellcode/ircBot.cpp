@@ -24,11 +24,13 @@ const char *HOST = "irc.europa-irc.de"
 
 using namespace std;
 
+//--- Win. spezifisch ----------------
 #ifdef WIN32
     SOCKET sockfd;
 #else
     int sockfd;
 #endif
+//------------------------------------
 
 void IrcDisconnect(){
 #ifdef WIN32
@@ -39,6 +41,7 @@ void IrcDisconnect(){
 #endif
 }
 void IrcConnect(){
+    
 #ifdef WIN32
     // Win. spezifisch: Sockets-Initialisierung
     WSADATA wsa;
