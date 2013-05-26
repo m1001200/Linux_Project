@@ -105,7 +105,13 @@ void BotFunctions(const string &buffer){
         exit(0);
     }
 }
-
+void IrcParse(string buffer){
+    if (buffer.find("\r\n") == buffer.length() - 2) {
+        buffer.erase(buffer.length() - 2);
+        
+        BotFunctions(buffer);
+    }
+}
 
 
 
