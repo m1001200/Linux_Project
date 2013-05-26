@@ -105,11 +105,11 @@ void SendToUplink(const char *msg){
     send(sockfd, msg, strlen(msg), 0);
 }
 void IrcIdentify(){
-    SendToUplink("NICK_NAME Bot\r\n");
-    SendToUplink("USER_NAME Bot 0 0 :Bot\r\n");
-    SendToUplink("PRIVMSG NickServ IDENTIFY password\r\n");
-    SendToUplink("JOIN #channel\r\n");
-    SendToUplink("PRIVMSG #channel: Hallo!!!\r\n");
+    SendToUplink("NICK_NAME Bot\r\n");                              // NICK
+    SendToUplink("USER_NAME Bot 0 0 :Bot\r\n");                     // Userdaten
+    SendToUplink("PRIVMSG NickServ IDENTIFY password\r\n");         // Identifizieren
+    SendToUplink("JOIN #channel\r\n");                              // Betreten Channel
+    SendToUplink("PRIVMSG #channel :Hallo, I'm a Mega-Bot!!!\r\n"); // Nachricht Nr.1
     
 }
 void PingParse(const string &buffer){
