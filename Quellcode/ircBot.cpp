@@ -17,20 +17,21 @@
     #include <netdb.h>
     #include <unistd.h>
 #endif
+// 20
+
+using namespace std;
 
 const unsigned int BUFF_SIZE = 1024; // input Buffer Size
 const int PORT = 6667;
-const char *HOST = "irc.europa-irc.de"
+const char *HOST = "irc.europa-irc.de";
 
 void IrcDisconnect();
 void IrcConnect();
 void SendToUplink(const char *msg);
 void IrcIdentify();
-void PingParse(const string &buffer);
-void BotFunctions(const string &buffer);
+void PingParse(const string & buffer);
+void BotFunctions(const string & buffer);
 void IrcParse(string buffer);
-
-using namespace std;
 
 //--- Win. spezifisch ----------------
 #ifdef WIN32
