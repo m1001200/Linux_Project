@@ -18,7 +18,7 @@
     #include <unistd.h>
 #endif
 
-const unsigned int MAX_LINE = 1024; // input Buffer Size
+const unsigned int BUFF_SIZE = 1024; // input Buffer Size
 const int PORT = 6667;
 const char *HOST = "irc.europa-irc.de"
 
@@ -38,6 +38,22 @@ using namespace std;
 #else
     int sockfd;
 #endif
+
+int main(){
+    IrcConnect();
+    IrcIdentify();
+    while (1) {
+        char buffer[BUFF_SIZE + 1] = {0};
+        if (recv(sockfd, buffer, BUFF_SIZE * sizeof(char), 0) < 0) {
+            perror("recv()");
+            IrcDisconnect();
+            exit(1);
+        }
+        cout << buffer;
+        IrcParse(buffer);
+    }
+    IrcDisconnect();
+}
 
 void IrcDisconnect(){
 #ifdef WIN32
