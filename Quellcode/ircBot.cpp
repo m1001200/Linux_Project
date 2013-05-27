@@ -1,5 +1,5 @@
 // Arkadij Doronin 24.05.2013
-// ircBot
+// IRC-Bot
 
     #include <cstdlib>
     #include <iostream>
@@ -89,13 +89,13 @@ void IrcConnect(){
     }
     
     sockaddr_in sin;
-    memset((char*)&sin,0,sizeof(sin));
+    memset((char*)&sin, 0, sizeof(sin));
     sin.sin_family = AF_INET;
     memcpy((char*)&sin.sin_addr, hp->h_addr, hp->h_length);
     sin.sin_port = htons(PORT);
-    memset(&(sin.sin_zero),0,8*sizeof(char));
+    memset(&(sin.sin_zero), 0, 8 * sizeof(char));
     
-    if (connect(sockfd,(sockaddr*)&sin,sizeof(sin)) == -1) {
+    if (connect(sockfd, (sockaddr*)&sin, sizeof(sin)) == -1) {
         perror("connect()");
         IrcDisconnect();
         exit(1);
@@ -105,13 +105,13 @@ void SendToUplink(const char *msg){
     send(sockfd, msg, strlen(msg), 0);
 }
 void IrcIdentify(){
-    SendToUplink("NICK_NAME Bot\r\n");                              // NICK
-    SendToUplink("USER_NAME Bot 0 0 :Bot\r\n");                     // Userdaten
+    SendToUplink("NICK ara222\r\n");                                   // NICK
+    SendToUplink("USER ara222 0 0 :ara222\r\n");                          // Userdaten
     SendToUplink("PRIVMSG NickServ IDENTIFY password\r\n");         // Identifizieren
     SendToUplink("JOIN #channel\r\n");                              // Betreten Channel
     SendToUplink("PRIVMSG #channel :Hallo, I'm a Mega-Bot!!!\r\n"); // Nachricht Nr.1
     
-}
+ }
 void PingParse(const string &buffer){
     size_t  pingPos = buffer.find("PING");
     if (pingPos != string::npos) {
