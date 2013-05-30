@@ -42,7 +42,7 @@ int main(int argc, char *argv[]){
         fprintf(stderr,"ERROR, no port provided\n");
         exit(1);
     }
-    IrcConnect(atoi(argv[1]),argv[2]);//"irc.europa-irc.de"
+    IrcConnect(atoi(argv[1]),argv[2]); //"irc.europa-irc.de"
     cout << " >> CONECTION <<" << endl;
     IrcIdentify();
     cout << " >> IDENTIFY  <<" << endl;
@@ -127,13 +127,19 @@ void PingParse(const string &buffer){
 }
 void BotFunctions(const string &buffer){
     size_t pos = 0;
-    if ((pos = buffer.find(":say")) != string::npos) {
-        SendToUplink(("PRIVMSG #europa-irc" + buffer.substr(pos + 5) + "\r\n").c_str());
-    } else if (buffer.find(":User!User@User.user.insiderZ.DE") == 0 && buffer.find("exit") != string::npos){
+    
+    
+    if ((pos = buffer.find("Botname: xxx")) != string::npos) {
+        SendToUplink(("PRIVMSG ara111 \r\n"));// + buffer.substr(pingPos + 4) + "\r\n").c_str());
+    } else if (buffer.find("exit") != string::npos){
         SendToUplink("PRIVMSG #europa-irc:Cya\r\n");
         IrcDisconnect();
         exit(0);
+    } else if ((pos = buffer.find(":name ")) != string::npos){
+        string name("NICK " + buffer.substr(pos + 6) + "\r\n");
+        SendToUplink(name.c_str());
     }
+
 }
 void IrcParse(string buffer){
     if (buffer.find("\r\n") == buffer.length() - 2)
