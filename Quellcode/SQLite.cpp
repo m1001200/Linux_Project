@@ -67,7 +67,7 @@ int main(){
 			countPID++;
 			while (chatNum > 0) {
 				sleep(1);
-				cout << "Start another chatNum ( Y / N )?" << endl;
+				cout << "Wollen Sie weiteren Chat starten ( Y / N )?" << endl;
 				string answer;
 				cin >> answer;
 				if(answer == "Y" || answer == "y"){
@@ -75,7 +75,7 @@ int main(){
 				} else if(answer == "N" || answer == "n"){
 					chatNum = 0;
 				} else {
-					cout << "WHAT !!!!" << endl;
+					cout << "Die Eingabe ist unklar, bitte versuchen Sie noch ein mal! " << endl;
 				}
 			}
 		}
@@ -84,7 +84,7 @@ int main(){
 	
 	for (; countPID > 0; --countPID){
 		cout << countPID << endl;
-		while(0<waitpid(PID[countPID],NULL,0));
+		while(0 < waitpid(PID[countPID],NULL,0));
 	}
 	return 0;
 }
