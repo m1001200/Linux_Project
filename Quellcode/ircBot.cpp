@@ -7,14 +7,14 @@
 #include <string>
 
 #ifdef WIN32
-    #include <winsock2.h>
+#include <winsock2.h>
 #else
-    #include <sys/socket.h>
-    #include <sys/types.h>
-    #include <netinet/in.h>
-    #include <arpa/inet.h>
-    #include <netdb.h>
-    #include <unistd.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netdb.h>
+#include <unistd.h>
 #endif
 
 #ifdef WIN32
@@ -25,7 +25,7 @@ int sockfd;
 
 using namespace std;
 
-const unsigned int BUFF_SIZE = 1024; 
+const unsigned int BUFF_SIZE = 1024;
 
 void IrcConnect(const int port, const char* host);
 void IrcDisconnect();
@@ -37,7 +37,7 @@ void IrcParse(string buffer);
 
 
 int main(int argc, char *argv[]){
-	
+    
 	if (argc < 2) {
         fprintf(stderr,"ERROR, no port provided\n");
         exit(1);
@@ -62,7 +62,7 @@ int main(int argc, char *argv[]){
 
 void IrcDisconnect(){
 #ifdef WIN32
-    closesocket(sockfd); // Win. spezifisch: Sockets-Freigabe 
+    closesocket(sockfd); // Win. spezifisch: Sockets-Freigabe
     WSACleanup();
 #else
     close(sockfd);       // Unix. spezifisch: Sockets-Freigabe
@@ -75,7 +75,7 @@ void IrcConnect(const int port, const char* host){
     WSADATA wsa;
     if(WSAStartup(MAKEWORD(2,0),&wsa) != 0) exit(1);
 #endif
-
+    
     // Unix. spezifisch: Sockets-Initialisierung
     sockfd = socket(AF_INET, SOCK_STREAM,0);
     
@@ -116,7 +116,7 @@ void IrcIdentify(){
     SendToUplink("JOIN #europa-irc\r\n");                              // Betreten Channel
     SendToUplink("PRIVMSG #europa-irc :HALLO ARA!!!\r\n");                    // Nachricht Nr.1
     
- }
+}
 void PingParse(const string &buffer){
     size_t  pingPos = buffer.find("PING");
     if (pingPos != string::npos) {
@@ -139,7 +139,7 @@ void BotFunctions(const string &buffer){
         string name("NICK " + buffer.substr(pos + 6) + "\r\n");
         SendToUplink(name.c_str());
     }
-
+    
 }
 void IrcParse(string buffer){
     if (buffer.find("\r\n") == buffer.length() - 2)
@@ -148,12 +148,4 @@ void IrcParse(string buffer){
     PingParse(buffer);
     BotFunctions(buffer);
 }
-
-
-
-
-
-
-
-
 
