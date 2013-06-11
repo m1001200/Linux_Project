@@ -7,6 +7,7 @@
 #include <cstring>
 #include <sstream>
 #include <sqlite3.h>
+#include "SQLite.h"
 
 
 #ifdef WIN32
@@ -35,23 +36,20 @@ struct BotParam {
 	string server, port, nick, channel;
 } botParam;
 
-int sqlite_getdatabase();
-
 int main(){
 	
 	pid_t PID[15];
 	int countPID = 0;
 	int chatNum = 1;
-	
-	cout << " Hallo!!! " << endl;
     
 	if(sqlite3_open(SQLITEFILE, &sqlitedb)){
 		cout << "Fehler beim sqlite3_open()";
 		exit(1);
 	}
-	if(!sqlite_getdatabase())
+    void createtable();
+	if(!sqlite_getlogdatabase())
 		cout << "Fehler beim sqlite_getdatabase" << endl;
-	
+    sqlite_getchatdatabase();
 	while (chatNum > 0 && countPID < 10) {
         
 		PID[countPID] = fork();
@@ -59,7 +57,8 @@ int main(){
 			cerr << "Fehler beim foke()" << endl;
 			chatNum = 0;
 		} else if(PID[countPID] == 0){
-			if(execlp ("./ircbot", "./ircbot", botParam.port.c_str(), botParam.server.c_str(), NULL))
+            cout << "BOT WIRD GESTARTET!!!" << endl;
+			if(execlp ("./Bot", "./Bot", botParam.port.c_str(), botParam.server.c_str(), NULL))
             perror("Fehler beim execvp()");
 			cout << "Das darf nicht ausgegeben werden!!!";
 			chatNum = 0;
@@ -88,9 +87,32 @@ int main(){
 	}
 	return 0;
 }
-int sqlite_getdatabase(){
+void sql_addchat(const char name[],const char channel[],const char chat[], const char date[]){
+	char tmp[1200];
+	sprintf(tmp,"INSERT INTO chat (nick,channel, chat, date) VALUES ('%s', '%s', '%s', '%s');", name, channel, chat, date);
+	sqlite3_exec(sqlitedb, tmp, NULL, NULL, NULL);
+}
+void createtable(){
+    sqlite3_exec(sqlitedb, "CREATE TABLE chat (id integer primary key, nick text, channel text, chat text, date text);", NULL, NULL, NULL);
+}
+int sqlite_getchatdatabase(){
 	sqlite3_stmt *vm;
-	sqlite3_prepare(sqlitedb, "SELECT * FROM logginlist", -1, &vm, NULL);
+	sqlite3_prepare(sqlitedb, "SELECT * FROM chat", -1, &vm, NULL);
+	
+    stringstream ss;
+	while (sqlite3_step(vm) != SQLITE_DONE) {
+        
+		ss << (char*)sqlite3_column_text(vm, 1) << sqlite3_column_text(vm, 2) <<
+        (char*)sqlite3_column_text(vm, 3) << (char*)sqlite3_column_text(vm, 4);
+	}
+    cout << ss.str();
+	sqlite3_finalize(vm);
+	
+	return 1;
+}
+int sqlite_getlogdatabase(){
+	sqlite3_stmt *vm;
+	sqlite3_prepare(sqlitedb, "SELECT * FROM loginglist", -1, &vm, NULL);
 	
 	while (sqlite3_step(vm) != SQLITE_DONE) {
         
@@ -101,10 +123,12 @@ int sqlite_getdatabase(){
 		botParam.channel = (char*)sqlite3_column_text(vm, 3);
 		botParam.nick = (char*)sqlite3_column_text(vm, 4);
 	}
+    
 	sqlite3_finalize(vm);
 	
 	return 1;
 }
+
 
 
 
