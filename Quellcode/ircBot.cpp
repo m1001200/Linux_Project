@@ -1,40 +1,34 @@
 // Arkadij Doronin 24.05.2013
 // IRC-Bot
 #include <iostream>
+#include <sstream>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
 #include <string>
+#include "ircBot.h"
 
 #ifdef WIN32
-#include <winsock2.h>
+    #include <winsock2.h>
 #else
-#include <sys/socket.h>
-#include <sys/types.h>
-#include <netinet/in.h>
-#include <arpa/inet.h>
-#include <netdb.h>
-#include <unistd.h>
+    #include <sys/socket.h>
+    #include <sys/types.h>
+    #include <netinet/in.h>
+    #include <arpa/inet.h>
+    #include <netdb.h>
+    #include <unistd.h>
 #endif
 
 #ifdef WIN32
-SOCKET sockfd;
+    SOCKET sockfd;
 #else
-int sockfd;
+    int sockfd;
 #endif
 
 using namespace std;
 
 const unsigned int BUFF_SIZE = 1024;
-
-void IrcConnect(const int port, const char* host);
-void IrcDisconnect();
-void SendToUplink(const char *msg);
-void IrcIdentify();
-void PingParse(const string & buffer);
-void BotFunctions(const string & buffer);
-void IrcParse(string buffer);
-
+bool b_save = false;
 
 int main(int argc, char *argv[]){
     
@@ -110,11 +104,11 @@ void SendToUplink(const char *msg){
     send(sockfd, msg, strlen(msg), 0);
 }
 void IrcIdentify(){
-    SendToUplink("NICK ara222\r\n");                                   // NICK
-    SendToUplink("USER ara222 0 0 :ara222\r\n");                          // Userdaten
-    SendToUplink("PRIVMSG NickServ IDENTIFY password\r\n");         // Identifizieren
-    SendToUplink("JOIN #europa-irc\r\n");                              // Betreten Channel
-    SendToUplink("PRIVMSG #europa-irc :HALLO ARA!!!\r\n");                    // Nachricht Nr.1
+    SendToUplink("NICK arkadij\r\n");                          // NICK
+    SendToUplink("USER arkadij 0 0 :arkadij\r\n");              // Userdaten
+    SendToUplink("PRIVMSG NickServ IDENTIFY password\r\n");   // Identifizieren
+    SendToUplink("JOIN #europa-irc\r\n");                     // Betreten Channel
+    SendToUplink("PRIVMSG #europa-irc :HALLO!!!\r\n");    // Nachricht Nr.1
     
 }
 void PingParse(const string &buffer){
@@ -128,18 +122,49 @@ void PingParse(const string &buffer){
 void BotFunctions(const string &buffer){
     size_t pos = 0;
     
-    
     if ((pos = buffer.find("Botname: xxx")) != string::npos) {
-        SendToUplink(("PRIVMSG ara111 \r\n"));// + buffer.substr(pingPos + 4) + "\r\n").c_str());
+        SendToUplink(("PRIVMSG " + SearchUsername(buffer) + " :Was ist los? \r\n").c_str());
+// Bot schliessen
     } else if (buffer.find("exit") != string::npos){
-        SendToUplink("PRIVMSG #europa-irc:Cya\r\n");
+// Nachrich an channel senden.
+        SendToUplink("PRIVMSG #channel :CIAO, schöhen Tag noch!\r\n"); // <-- Hier mus noch was gemacht werden!!!
+// Nachrich an user senden.
+        SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :CIAO, schöhen Tag noch!\r\n").c_str());
         IrcDisconnect();
         exit(0);
+// NICK - Name änderung
     } else if ((pos = buffer.find(":name ")) != string::npos){
         string name("NICK " + buffer.substr(pos + 6) + "\r\n");
         SendToUplink(name.c_str());
-    }
+    } else if ((pos = buffer.find("save")) != string::npos){
+		b_save = true;
+        SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird gespeichert!!!\r\n").c_str());
+	} else if ((pos = buffer.find("stopsave")) != string::npos){
+		b_save = false;
+        SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird nicht mehr gespeichert!!!\r\n").c_str());
+	}
     
+    if (b_save) {
+		time_t now = time(0);
+		
+		time(&now);
+		tm* localtm = localtime(&now);
+		
+		// Aktuelles Datum und Zeit speichern 
+		stringstream t;
+		t << localtm->tm_year+1900 << "-" << localtm->tm_mon << "-" << localtm->tm_mday << " "
+        << localtm->tm_hour	<< ":" << localtm->tm_min << ":" << localtm->tm_sec;
+		
+		// Name speichern
+		string name(buffer.substr(buffer.find(":") + 1, buffer.find("!") - 1));
+        // Message speichern
+		string message(buffer.substr(buffer.find(" :") + 2, buffer.length() - 1));
+        // Channelname speichern
+		string channel	(buffer.substr(buffer.find("!") + 1, buffer.find("@") - 1));
+		// Datenbank-Eintrag
+		sql_addchat(name.c_str(), channel.c_str(), message.c_str(), t.str().c_str());
+        cout << endl << " Information wurde erfolgreich gespeichert!" << endl;
+	}
 }
 void IrcParse(string buffer){
     if (buffer.find("\r\n") == buffer.length() - 2)
@@ -147,5 +172,9 @@ void IrcParse(string buffer){
     
     PingParse(buffer);
     BotFunctions(buffer);
+}
+string SearchUsername(string s){
+    string tmp = s.substr(s.find(":")+1,s.find("!")-1);
+    return tmp;
 }
 
