@@ -144,6 +144,12 @@ void BotFunctions(const string &buffer){
         string name("NICK " + buffer.substr(pos + 5) + "\r\n");
         SendToUplink(name.c_str());
     }
+    if ((pos = buffer.find("lastseen ")) != string::npos) {
+        string s = buffer.substr(pos+9);
+        
+        SendToUplink(("PRIVMSG " + SearchUsername(buffer) + " " + sql_lastseen(SearchUsername(s).c_str()) + "\r\n").c_str());
+        
+    }
     if ((buffer.find("save")) != string::npos){
 		b_save = true;
         SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird gespeichert!!!\r\n").c_str());
@@ -153,8 +159,15 @@ void BotFunctions(const string &buffer){
         SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird nicht mehr gespeichert!!!\r\n").c_str());
 	}
     if ((buffer.find("print")) != string::npos){
-        //SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird gespeichert!!!\r\n").c_str());
-        sqlite_getchatdatabase();
+        string s = sql_getchat();
+        size_t anf_pos = 0;
+        size_t end_pos = s.find("$");
+        while (end_pos != s.npos) {
+            
+            SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " " + s.substr(anf_pos, end_pos) + "\r\n").c_str());
+            s.erase(anf_pos, end_pos+1);
+            end_pos = s.find("$");        
+        }
 	}
 
     if (b_save) {

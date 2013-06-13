@@ -31,23 +31,6 @@ void sql_addchat(const char name[],const char channel[],const char chat[], const
 void createtable(){
     sqlite3_exec(sqlitedb, "CREATE TABLE chat (id integer primary key, nick text, channel text, chat text, date text);", NULL, NULL, NULL);
 }
-int sqlite_getchatdatabase(){
-	sqlite3_stmt *vm;
-	sqlite3_prepare(sqlitedb, "SELECT * FROM chat", -1, &vm, NULL);
-	
-    stringstream ss;
-	while (sqlite3_step(vm) != SQLITE_DONE) {
-        
-		ss  << endl << (char*)sqlite3_column_text(vm, 1)
-            << endl << sqlite3_column_text(vm, 2)
-            << endl << (char*)sqlite3_column_text(vm, 3)
-            << endl << (char*)sqlite3_column_text(vm, 4);
-	}
-    cout << ss.str();
-	sqlite3_finalize(vm);
-	
-	return 1;
-}
 BotParam sqlite_getlogdatabase(int ID){
 	sqlite3_stmt *vm;
 	sqlite3_prepare(sqlitedb, "SELECT * FROM loginglist", -1, &vm, NULL);
@@ -67,6 +50,44 @@ BotParam sqlite_getlogdatabase(int ID){
 	sqlite3_finalize(vm);
 	
 	return botParam;
+}
+string sql_lastseen(const char name[]){
+	
+	sqlite3_stmt *vm;
+	
+	stringstream s;
+	s << "SELECT * FROM chat WHERE nick ='" << name << "' ORDER BY id DESC LIMIT 1";
+	sqlite3_prepare(sqlitedb, s.str().c_str(), -1, &vm, NULL);
+	
+	stringstream ss;
+	
+	while (sqlite3_step(vm) != SQLITE_DONE)
+	{
+		ss	<< (char*)sqlite3_column_text(vm, 1) << " "
+        << (char*)sqlite3_column_text(vm, 4) << std::endl;
+	}
+	
+	sqlite3_finalize(vm);
+	
+	return ss.str();
+}
+string sql_getchat(){
+	sqlite3_stmt *vm;
+	if(sqlite3_prepare(sqlitedb, "SELECT * FROM chat", -1, &vm, NULL) != 0)
+		createtable();
+	
+	stringstream ss;
+    
+	while (sqlite3_step(vm) != SQLITE_DONE)
+	{
+		ss	<< (char*)sqlite3_column_text(vm, 1) << " "
+            << (char*)sqlite3_column_text(vm, 3) << " "
+            << (char*)sqlite3_column_text(vm, 4) << "$";
+	}
+	
+	sqlite3_finalize(vm);
+	
+	return ss.str();
 }
 void sql_close(){
     sqlite3_close(sqlitedb);

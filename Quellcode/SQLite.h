@@ -5,10 +5,11 @@
 struct BotParam {
     std::string server, port, nick, channel;
 };
+std::string sql_getchat();
+std::string sql_lastseen(const char name[]);
 void sql_close();
 void sql_init();
 void createtable();
-int sqlite_getchatdatabase();
 BotParam sqlite_getlogdatabase(int ID);
 void sql_addchat(const char name[],
                  const char channel[],
