@@ -1,5 +1,8 @@
 // Arkadij Doronin 24.05.2013
 // IRC-Bot
+#ifndef ircBot_cpp
+#define ircBot_cpp
+
 #include <iostream>
 #include <sstream>
 #include <cstdlib>
@@ -7,6 +10,7 @@
 #include <cstring>
 #include <string>
 #include "ircBot.h"
+#include "SQLite.h"
 
 #ifdef WIN32
     #include <winsock2.h>
@@ -32,14 +36,16 @@ bool b_save = false;
 
 int main(int argc, char *argv[]){
     
-	if (argc < 2) {
+	if (argc < 4) {
         fprintf(stderr,"ERROR, no port provided\n");
         exit(1);
     }
+    
     IrcConnect(atoi(argv[1]),argv[2]); //"irc.europa-irc.de"
     cout << " >> CONECTION <<" << endl;
-    IrcIdentify();
+    IrcIdentify(argv[3], argv[4]);
     cout << " >> IDENTIFY  <<" << endl;
+    sql_init();
     while (1) {
         char buffer[BUFF_SIZE + 1] = {0};
         if (recv(sockfd, buffer, BUFF_SIZE * sizeof(char), 0) < 0) {
@@ -82,7 +88,7 @@ void IrcConnect(const int port, const char* host){
     hostent *hp = gethostbyname(host);
     
     if (!hp) {
-        cerr << "gethostbyname()" << endl;
+        cerr << hp << " gethostbyname() " << host << endl;
         IrcDisconnect();
         exit(1);
     }
@@ -96,27 +102,28 @@ void IrcConnect(const int port, const char* host){
     
     if (connect(sockfd, (sockaddr*)&sin, sizeof(sin)) == -1) {
         perror("connect()");
-        IrcDisconnect();
         exit(1);
     }
 }
 void SendToUplink(const char *msg){
     send(sockfd, msg, strlen(msg), 0);
 }
-void IrcIdentify(){
-    SendToUplink("NICK arkadij\r\n");                          // NICK
-    SendToUplink("USER arkadij 0 0 :arkadij\r\n");              // Userdaten
-    SendToUplink("PRIVMSG NickServ IDENTIFY password\r\n");   // Identifizieren
-    SendToUplink("JOIN #europa-irc\r\n");                     // Betreten Channel
-    SendToUplink("PRIVMSG #europa-irc :HALLO!!!\r\n");    // Nachricht Nr.1
+void IrcIdentify(string channel, string nick){
+    // Identifikations-Funktion
+    SendToUplink(("NICK " + nick + "\r\n").c_str());                    // NICK
+    SendToUplink(("USER " + nick + " 0 0 :" + nick + "\r\n").c_str());  // Userdaten
+    SendToUplink("PRIVMSG NickServ IDENTIFY password\r\n");             // Identifizieren
+    SendToUplink(("JOIN #" + channel + "\r\n").c_str());                // Betreten Channel
+    SendToUplink(("PRIVMSG #" + channel + " :HALLO!!!\r\n").c_str());   // Nachricht Nr.1
     
 }
 void PingParse(const string &buffer){
+    // PingPongParser-Funktion
     size_t  pingPos = buffer.find("PING");
     if (pingPos != string::npos) {
         string pong("PONG" + buffer.substr(pingPos + 4) + "\r\n");
         cout << pong;
-        SendToUplink(pong.c_str());
+        SendToUplink(pong.c_str());  // wird an server gesendet
     }
 }
 void BotFunctions(const string &buffer){
@@ -133,17 +140,23 @@ void BotFunctions(const string &buffer){
         IrcDisconnect();
         exit(0);
 // NICK - Name änderung
-    } else if ((pos = buffer.find(":name ")) != string::npos){
-        string name("NICK " + buffer.substr(pos + 6) + "\r\n");
+    } else if ((pos = buffer.find("name ")) != string::npos){
+        string name("NICK " + buffer.substr(pos + 5) + "\r\n");
         SendToUplink(name.c_str());
-    } else if ((pos = buffer.find("save")) != string::npos){
+    }
+    if ((buffer.find("save")) != string::npos){
 		b_save = true;
         SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird gespeichert!!!\r\n").c_str());
-	} else if ((pos = buffer.find("stopsave")) != string::npos){
+	}
+    if ((buffer.find("stopsave")) != string::npos){
 		b_save = false;
         SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird nicht mehr gespeichert!!!\r\n").c_str());
 	}
-    
+    if ((buffer.find("print")) != string::npos){
+        //SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird gespeichert!!!\r\n").c_str());
+        sqlite_getchatdatabase();
+	}
+
     if (b_save) {
 		time_t now = time(0);
 		
@@ -177,4 +190,4 @@ string SearchUsername(string s){
     string tmp = s.substr(s.find(":")+1,s.find("!")-1);
     return tmp;
 }
-
+#endif

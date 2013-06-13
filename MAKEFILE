@@ -1,0 +1,35 @@
+# Hier werden die  MAKEFILE_IRC und MAKEFILE_MAIN aufgerufen.
+CHECKDIR = /usr/bin/sqlite3
+PROG = MyProg
+TRGTS = MAKEFILE_IRC MAKEFILE_MAIN
+
+$(PROG): $(TRGTS)
+
+all: $(TRGTS)
+
+MAKEFILE_IRC:
+	cd ./Quellcode ; make -f MAKEFILE_IRC
+
+MAKEFILE_MAIN:
+	cd ./Quellcode ; make -f MAKEFILE_MAIN
+
+clean:
+	rm -f *.o *~
+	cd ./Quellcode ; make clean
+	cd ./Quellcode ; make clean
+
+install:
+	@if [ ! -f $(CHECKDIR) ]; \
+		then \
+		mkdir tmp; \
+		cd tmp; \
+		wget http://www.sqlite.org/2013/sqlite-autoconf-3071700.tar.gz; \
+		tar xfvz sqlite-autoconfig-3071700.tar.gz; \
+		./sqlite-autoconfig-307100/configure; \
+		sudo make install; \
+		cd..;\
+		sudo rm tmp;\
+		echo "install SQLITE3 in $(CHECKDIR)"; \
+	else \
+		echo "SQLITE3 is already install";\
+	fi
