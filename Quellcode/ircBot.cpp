@@ -33,6 +33,7 @@ using namespace std;
 
 const unsigned int BUFF_SIZE = 1024;
 bool b_save = false;
+string NICKNAME = "ara";
 
 int main(int argc, char *argv[]){
     
@@ -40,20 +41,16 @@ int main(int argc, char *argv[]){
         fprintf(stderr,"ERROR, no port provided\n");
         exit(1);
     }
-    
-    IrcConnect(atoi(argv[1]),argv[2]); //"irc.europa-irc.de"
-    cout << " >> CONECTION <<" << endl;
-    IrcIdentify(argv[3], argv[4]);
-    cout << " >> IDENTIFY  <<" << endl;
+    NICKNAME = argv[4];
+    IrcConnect(atoi(argv[1]),argv[2]);  // server, port
+    IrcIdentify(argv[3], argv[4]);      // channel, nick
     sql_init();
     while (1) {
         char buffer[BUFF_SIZE + 1] = {0};
         if (recv(sockfd, buffer, BUFF_SIZE * sizeof(char), 0) < 0) {
-            perror("recv()");
             IrcDisconnect();
             exit(1);
         }
-        cout << buffer;
         IrcParse(buffer);
     }
     IrcDisconnect();
@@ -80,19 +77,15 @@ void IrcConnect(const int port, const char* host){
     sockfd = socket(AF_INET, SOCK_STREAM,0);
     
     if (static_cast<int> (sockfd) < 0) {
-        perror("socket()");
         IrcDisconnect();
         exit(1);
     }
-    
     hostent *hp = gethostbyname(host);
-    
     if (!hp) {
-        cerr << hp << " gethostbyname() " << host << endl;
         IrcDisconnect();
         exit(1);
     }
-    
+    // Socket Standartfunktionen
     sockaddr_in sin;
     memset((char*)&sin, 0, sizeof(sin));
     sin.sin_family = AF_INET;
@@ -101,7 +94,6 @@ void IrcConnect(const int port, const char* host){
     memset(&(sin.sin_zero), 0, 8 * sizeof(char));
     
     if (connect(sockfd, (sockaddr*)&sin, sizeof(sin)) == -1) {
-        perror("connect()");
         exit(1);
     }
 }
@@ -122,7 +114,6 @@ void PingParse(const string &buffer){
     size_t  pingPos = buffer.find("PING");
     if (pingPos != string::npos) {
         string pong("PONG" + buffer.substr(pingPos + 4) + "\r\n");
-        cout << pong;
         SendToUplink(pong.c_str());  // wird an server gesendet
     }
 }
@@ -131,15 +122,13 @@ void BotFunctions(const string &buffer){
     
     if ((pos = buffer.find("Botname: xxx")) != string::npos) {
         SendToUplink(("PRIVMSG " + SearchUsername(buffer) + " :Was ist los? \r\n").c_str());
-// Bot schliessen
+    // Bot schliessen
     } else if (buffer.find("exit") != string::npos){
-// Nachrich an channel senden.
-        SendToUplink("PRIVMSG #channel :CIAO, schöhen Tag noch!\r\n"); // <-- Hier mus noch was gemacht werden!!!
-// Nachrich an user senden.
-        SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :CIAO, schöhen Tag noch!\r\n").c_str());
+    // Nachrich an user senden.
+        SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Ciao, schöhen Tag noch!\r\n").c_str());
         IrcDisconnect();
         exit(0);
-// NICK - Name änderung
+    // NICK - Name änderung
     } else if ((pos = buffer.find("name ")) != string::npos){
         string name("NICK " + buffer.substr(pos + 5) + "\r\n");
         SendToUplink(name.c_str());
@@ -148,28 +137,42 @@ void BotFunctions(const string &buffer){
         string s = buffer.substr(pos+9);
         
         SendToUplink(("PRIVMSG " + SearchUsername(buffer) + " " + sql_lastseen(SearchUsername(s).c_str()) + "\r\n").c_str());
-        
+         return;
     }
-    if ((buffer.find("save")) != string::npos){
+    // Log wird gespeichert
+    if ((buffer.find("start")) != string::npos){
 		b_save = true;
-        SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird gespeichert!!!\r\n").c_str());
+        return;
 	}
-    if ((buffer.find("stopsave")) != string::npos){
+    // Log wird nicht mehr gespeichert
+    if ((buffer.find("stop")) != string::npos){
 		b_save = false;
-        SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " :Information wird nicht mehr gespeichert!!!\r\n").c_str());
+        return;
 	}
+    // if message has => join <= then the bot join a channel given in params <=
+	if((pos = buffer.find("join")) != string::npos){
+		string tmp = "JOIN " + buffer.substr(pos + 5, buffer.length() -1) + "\r\n";
+		SendToUplink(tmp.c_str());
+		return;
+	}
+	// if message has => leave <= then the bot part a channel given in params <=
+	if((pos = buffer.find("leave")) != string::npos){
+		string tmp = "PART " + buffer.substr(pos + 5, buffer.length() -1) + "\r\n";
+		SendToUplink(tmp.c_str());
+		return;
+	}
+    // Log wird ausgegeben
     if ((buffer.find("print")) != string::npos){
         string s = sql_getchat();
         size_t anf_pos = 0;
         size_t end_pos = s.find("$");
         while (end_pos != s.npos) {
-            
             SendToUplink(("PRIVMSG " +  SearchUsername(buffer) + " " + s.substr(anf_pos, end_pos) + "\r\n").c_str());
             s.erase(anf_pos, end_pos+1);
             end_pos = s.find("$");        
         }
+        return;
 	}
-
     if (b_save) {
 		time_t now = time(0);
 		
@@ -189,13 +192,15 @@ void BotFunctions(const string &buffer){
 		string channel	(buffer.substr(buffer.find("!") + 1, buffer.find("@") - 1));
 		// Datenbank-Eintrag
 		sql_addchat(name.c_str(), channel.c_str(), message.c_str(), t.str().c_str());
-        cout << endl << " Information wurde erfolgreich gespeichert!" << endl;
 	}
 }
+// Hier wird Endung abgeschnitten 
 void IrcParse(string buffer){
     if (buffer.find("\r\n") == buffer.length() - 2)
         buffer.erase(buffer.length() - 2);
-    
+    if(buffer.find("NICK ") != buffer.npos){
+        SendToUplink(("NICK " + NICKNAME + "\r\n").c_str());
+    }
     PingParse(buffer);
     BotFunctions(buffer);
 }

@@ -19,18 +19,22 @@ using namespace std;
 #define SQLITEFILE "../SQLite/login.sqlite3"
 sqlite3 *sqlitedb = NULL; // Pointer zur SQLite
 
+// DB wirrd geöffnet/gestartet
 void sql_init(){
     sqlite3_open(SQLITEFILE, &sqlitedb);
     createtable();
 }
+// Hier werden die Parameter in die chat-Tabelle eingefügt
 void sql_addchat(const char name[],const char channel[],const char chat[], const char date[]){
 	char tmp[1200];
 	sprintf(tmp,"INSERT INTO chat (nick,channel, chat, date) VALUES ('%s', '%s', '%s', '%s');", name, channel, chat, date);
 	sqlite3_exec(sqlitedb, tmp, NULL, NULL, NULL);
 }
+// Hier wird eine Tabelle mit eine ID und 4 Parameter erstellt.
 void createtable(){
     sqlite3_exec(sqlitedb, "CREATE TABLE chat (id integer primary key, nick text, channel text, chat text, date text);", NULL, NULL, NULL);
 }
+// Hier werden die Logdaten aus der loginglist-Tabelle gehollt
 BotParam sqlite_getlogdatabase(int ID){
 	sqlite3_stmt *vm;
 	sqlite3_prepare(sqlitedb, "SELECT * FROM loginglist", -1, &vm, NULL);
@@ -51,6 +55,7 @@ BotParam sqlite_getlogdatabase(int ID){
 	
 	return botParam;
 }
+// Hie werden die user-lastseen-Daten aus der chat-Tabelle gehollt und als string zurückgegeben
 string sql_lastseen(const char name[]){
 	
 	sqlite3_stmt *vm;
@@ -71,6 +76,7 @@ string sql_lastseen(const char name[]){
 	
 	return ss.str();
 }
+// Hie werden ganze loginfo aus der chat-Tabelle gehollt und als string zurückgegeben
 string sql_getchat(){
 	sqlite3_stmt *vm;
 	if(sqlite3_prepare(sqlitedb, "SELECT * FROM chat", -1, &vm, NULL) != 0)
@@ -89,6 +95,7 @@ string sql_getchat(){
 	
 	return ss.str();
 }
+// Hier wir die Datenbank geschlossen
 void sql_close(){
     sqlite3_close(sqlitedb);
 }

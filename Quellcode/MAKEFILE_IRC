@@ -3,7 +3,7 @@ CFLAGS=-c -Wall
 LDFLAGS=-lsqlite3
 SOURCES=ircBot.cpp SQLite.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
-EXECUTABLE=Bot
+EXECUTABLE=IRCBot
 
 all: $(SOURCES) $(EXECUTABLE)
 	

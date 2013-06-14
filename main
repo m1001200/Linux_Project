@@ -1,0 +1,45 @@
+.TH  "" "" 
+.PP
+## MAIN ##
+.IP
+.nf
+\f[C]
+main\ \-\ startet\ mehrere\ Bots
+\f[]
+.fi
+.SS SYNOPSIS
+.IP
+.nf
+\f[C]
+main
+\f[]
+.fi
+.SS DESCRIPTION
+.IP \[bu] 2
+Main kann mehrere Bots starten.
+(neu Prozesse)
+.IP \[bu] 2
+Main sendet Parameter (port, server, channel, nick), die aus der
+sqlite3\-DB ausgelesen werden, an Bots.
+.SS INFOS
+.PP
+STANDARTEINSTELLUNG:
+.IP \[bu] 2
+SERVER 1 Information
+.PP
+WEBCHAT:http://client01.chat.mibbit.com/?server=irc.europa\-irc.de
+.PP
+NICK: ara111 (falls nicht geht, dann prefixed eingeben)
+.IP \[bu] 2
+SERVER 2 Information
+.PP
+WEBCHAT:http://wikkedwire.com/mibbit
+.PP
+NICK: arkadij
+.SS AUTHOR
+.IP
+.nf
+\f[C]
+Arkadij\ Doronin\ m1001200\@fh\-heidelberg.de\ 
+\f[]
+.fi
